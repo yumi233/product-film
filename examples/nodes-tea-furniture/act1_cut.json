@@ -1,0 +1,37 @@
+{
+  "output": "ASSETS/videos/第一幕_v5画卷_粗剪_skill.mp4",
+  "intro": {"image": "ASSETS/长卷/第一幕帧/P0_7200.jpg", "seconds": 4.5, "xfade": 0.5},
+  "clips": [
+    {"path": "ASSETS/videos/第一幕_v5画卷/1-1.mp4", "speed": 1.8},
+    {"path": "ASSETS/videos/第一幕_v5画卷/1-2.mp4", "speed": 1.3},
+    {"path": "ASSETS/videos/第一幕_v5画卷/1-3.mp4", "speed": 1.2},
+    {"path": "ASSETS/videos/第一幕_v5画卷/1-4.mp4", "speed": 1.2},
+    {"path": "ASSETS/videos/第一幕_v5画卷/1-5.mp4", "speed": 1.2},
+    {"path": "ASSETS/videos/第一幕_v5画卷/1-6.mp4", "speed": 1.1}
+  ],
+  "align": true,
+  "xfade": 0.25,
+  "fade": [1.0, 1.5],
+  "title": {"seg": 0, "at": 0.6, "until": 4.3, "zh": "节序", "style": "vertical", "x": 1640, "y": 250, "size": 170, "seal": true},
+  "vo": {"dir": "ASSETS/audio/旁白_第一幕", "tempo": 0.92, "lines": [
+    {"id": "L6", "seg": 0, "at": 2.3},
+    {"id": "L1", "seg": 2, "at": 0.8, "zh": "竹有节，", "en": "Bamboo grows in nodes,"},
+    {"id": "L2", "seg": 3, "at": 1.0, "zh": "茶有序。", "en": "and tea moves in order."},
+    {"id": "L3", "seg": 4, "at": 1.0, "zh": "千年来，人们围坐一席。", "en": "For a thousand years, people have gathered around one table."},
+    {"id": "M5a", "seg": 5, "at": 2.2, "zh": "器物在变，", "en": "The vessels change;"},
+    {"id": "M5b", "seg": 6, "at": 1.2, "zh": "围坐的方式，没有变。", "en": "the way we sit together does not."}
+  ]},
+  "music": [
+    {"seg": 0, "at": 0.3, "phrase": "open"},
+    {"seg": 0, "at": 1.1, "phrase": "shimmer"},
+    {"seg": 0, "at": 2.7, "phrase": "stamp"},
+    {"seg": 1, "at": 0.4, "phrase": "shimmer"},
+    {"seg": 2, "at": 0.0, "phrase": "walk"},
+    {"seg": 3, "at": 0.0, "phrase": "busy"},
+    {"seg": 4, "at": 0.0, "phrase": "walk"},
+    {"seg": 5, "at": 0.0, "phrase": "walk"},
+    {"seg": 6, "at": 0.2, "phrase": "low"},
+    {"seg": 6, "at": 4.0, "phrase": "chord"}
+  ],
+  "ambience": 0.3
+}

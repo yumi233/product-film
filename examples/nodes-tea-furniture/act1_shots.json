@@ -1,0 +1,56 @@
+[
+ {
+  "name": "1-1",
+  "secs": 8,
+  "prompt": "This is an ancient Chinese handscroll painting (Ming blue-green gongbi on aged silk). Image 1 is the exact FIRST frame and image 2 is the exact LAST frame. The camera glides smoothly to the LEFT along the flat painted scroll at a steady constant speed, travelling from image 1 to image 2, like a viewer unrolling a handscroll. The painting stays a flat painted silk surface with the same brushwork, colours and silk texture; only gentle painted-world life moves inside it. At first almost still on the blank silk frontispiece and its pale brocade border, then the pan begins; faint mist drifts across the silk. No text, no new objects, no 3D camera rotation, no zoom, no style change.",
+  "refs": [
+   "ASSETS/长卷/第一幕帧/P0_7200.jpg",
+   "ASSETS/长卷/第一幕帧/P1_6600.jpg"
+  ]
+ },
+ {
+  "name": "1-2",
+  "secs": 8,
+  "prompt": "This is an ancient Chinese handscroll painting (Ming blue-green gongbi on aged silk). Image 1 is the exact FIRST frame and image 2 is the exact LAST frame. The camera glides smoothly to the LEFT along the flat painted scroll at a steady constant speed, travelling from image 1 to image 2, like a viewer unrolling a handscroll. The painting stays a flat painted silk surface with the same brushwork, colours and silk texture; only gentle painted-world life moves inside it. Morning mist flows between the bamboo clumps in soft bands, bamboo leaves sway in a breeze, the little stream ripples and flows toward the front, a dew drop falls from a bamboo leaf. No text, no new objects, no 3D camera rotation, no zoom, no style change.",
+  "refs": [
+   "ASSETS/长卷/第一幕帧/P1_6600.jpg",
+   "ASSETS/长卷/第一幕帧/P2_5200.jpg"
+  ]
+ },
+ {
+  "name": "1-3",
+  "secs": 8,
+  "prompt": "This is an ancient Chinese handscroll painting (Ming blue-green gongbi on aged silk). Image 1 is the exact FIRST frame and image 2 is the exact LAST frame. The camera glides smoothly to the LEFT along the flat painted scroll at a steady constant speed, travelling from image 1 to image 2, like a viewer unrolling a handscroll. The painting stays a flat painted silk surface with the same brushwork, colours and silk texture; only gentle painted-world life moves inside it. By the red railing a servant boy fans the charcoal tea stove with a round fan, white steam curls up from the kettle spout and drifts leftward ahead of the camera toward the large standing screen; bamboo sways. No text, no new objects, no 3D camera rotation, no zoom, no style change.",
+  "refs": [
+   "ASSETS/长卷/第一幕帧/P2_5200.jpg",
+   "ASSETS/长卷/第一幕帧/P3_4000.jpg"
+  ]
+ },
+ {
+  "name": "1-4",
+  "secs": 8,
+  "prompt": "This is an ancient Chinese handscroll painting (Ming blue-green gongbi on aged silk). Image 1 is the exact FIRST frame and image 2 is the exact LAST frame. The camera glides smoothly to the LEFT along the flat painted scroll at a steady constant speed, travelling from image 1 to image 2, like a viewer unrolling a handscroll. The painting stays a flat painted silk surface with the same brushwork, colours and silk texture; only gentle painted-world life moves inside it. Scholars sit around the long table appreciating antiques and talking; a court lady steps forward offering a cup of tea, a scholar receives it and lifts it; servant boys move about; a boy runs past at the front. No text, no new objects, no 3D camera rotation, no zoom, no style change.",
+  "refs": [
+   "ASSETS/长卷/第一幕帧/P3_4000.jpg",
+   "ASSETS/长卷/第一幕帧/P4_3000.jpg"
+  ]
+ },
+ {
+  "name": "1-5",
+  "secs": 8,
+  "prompt": "This is an ancient Chinese handscroll painting (Ming blue-green gongbi on aged silk). Image 1 is the exact FIRST frame and image 2 is the exact LAST frame. The camera glides smoothly to the LEFT along the flat painted scroll at a steady constant speed, travelling from image 1 to image 2, like a viewer unrolling a handscroll. The painting stays a flat painted silk surface with the same brushwork, colours and silk texture; only gentle painted-world life moves inside it. Past the Taihu rocks and bamboo by the garden wall, the round moon gate comes into view; inside, two scholars in the waterside pavilion raise their tea cups to each other while a boy pours tea; willow branches sway and the pond ripples around the lotus. No text, no new objects, no 3D camera rotation, no zoom, no style change.",
+  "refs": [
+   "ASSETS/长卷/第一幕帧/P4_3000.jpg",
+   "ASSETS/长卷/第一幕帧/P5_1500.jpg"
+  ]
+ },
+ {
+  "name": "1-6",
+  "secs": 8,
+  "prompt": "This is an ancient Chinese handscroll painting (Ming blue-green gongbi on aged silk). Image 1 is the exact FIRST frame and image 2 is the exact LAST frame. The camera glides smoothly to the LEFT along the flat painted scroll at a steady constant speed, travelling from image 1 to image 2, like a viewer unrolling a handscroll. The painting stays a flat painted silk surface with the same brushwork, colours and silk texture; only gentle painted-world life moves inside it. The garden wall ends and a wide calm lake opens out; long bands of mist drift slowly over the water; the camera slows down and comes to rest on the distant empty pavilion standing over the water. Very quiet. No text, no new objects, no 3D camera rotation, no zoom, no style change.",
+  "refs": [
+   "ASSETS/长卷/第一幕帧/P5_1500.jpg",
+   "ASSETS/长卷/第一幕帧/P6_0.jpg"
+  ]
+ }
+]
