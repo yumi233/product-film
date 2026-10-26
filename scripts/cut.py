@@ -12,10 +12,12 @@ Config (paths relative to the JSON file; times "at" are seconds inside a segment
   "fade":    [1.0, 1.5],
   "title":   {"seg": 0, "at": 0.6, "until": 4.3, "zh": "节序", "en": "", "style": "vertical",  # or "center"
               "x": 1640, "y": 250, "size": 170, "seal": true},
-  "vo":      {"dir": "audio/vo", "tempo": 0.92,
+  "vo":      {"dir": "audio/vo", "tempo": 1.0,
               "lines": [{"id": "L1", "seg": 2, "at": 0.8, "zh": "竹有节，", "en": "Bamboo grows in nodes,"}, ...]},
+  # User audio can replace dir/id.wav with a per-line "path": "audio/narration.m4a".
   "music":   [{"seg": 0, "at": 0.3, "phrase": "open"}, ...],                      # phrases: see score.py
-  "ambience": 0.3       # level of the clips' own audio
+  "source_audio": "mute",  # use verified_ambience only after auditioning for unwanted speech
+  "ambience": 0.3       # level of retained, verified source ambience
 }
 Also writes <output>_score.wav. Subtitles: white Songti zh over serif en, soft shadow, gentle dark gradient below.
 """
@@ -25,6 +27,7 @@ from scipy.io import wavfile
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import score
+from audio_policy import narration_source, source_audio_mode, validate_audio_inputs
 
 W, H, FPS, SR = 1920, 1080, 24, 44100
 SONG = '/System/Library/Fonts/Supplemental/Songti.ttc'
@@ -44,7 +47,10 @@ def lowres(path, start, n):
 
 
 def main(cfg_path):
-    C = json.load(open(cfg_path)); base = os.path.dirname(os.path.abspath(cfg_path))
+    with open(cfg_path) as config_file:
+        C = json.load(config_file)
+    base = os.path.dirname(os.path.abspath(cfg_path))
+    validate_audio_inputs(C, base)  # ask for missing user narration before encoding the video
     P = lambda p: p if os.path.isabs(p) else os.path.join(base, p)
     out = P(C['output']); T = tempfile.mkdtemp(prefix='cut_'); os.makedirs(os.path.dirname(out), exist_ok=True)
 
@@ -65,9 +71,10 @@ def main(cfg_path):
         sh('ffmpeg', '-y', '-v', 'error', '-ss', f'{st}', '-i', src, '-vf',
            f'setpts=PTS/{sp},fps={FPS},scale={W}:-2:flags=lanczos,crop={W}:{H},format=yuv420p', '-an', '-c:v', 'libx264', '-crf', '16', f'{T}/v{i}.mp4')
         has_a = 'audio' in subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', src], capture_output=True, text=True).stdout
-        if has_a:
+        keep_a = has_a and source_audio_mode(C, c) == 'verified_ambience'
+        if keep_a:
             sh('ffmpeg', '-y', '-v', 'error', '-ss', f'{st}', '-i', src, '-af', f'atempo={sp},aresample={SR}', '-ac', '1', f'{T}/a{i}.wav')
-        segs.append({'v': f'{T}/v{i}.mp4', 'a': f'{T}/a{i}.wav' if has_a else None, 'd': dur(f'{T}/v{i}.mp4'), 'trim': st})
+        segs.append({'v': f'{T}/v{i}.mp4', 'a': f'{T}/a{i}.wav' if keep_a else None, 'd': dur(f'{T}/v{i}.mp4'), 'trim': st})
         xfs.append(c.get('xfade', C.get('xfade', 0.25))); prev = src
     starts, t = [], 0.0
     for i, s in enumerate(segs):
@@ -97,14 +104,17 @@ def main(cfg_path):
         f = int(0.4 * SR); env = np.ones(len(a)); env[:f] = np.linspace(0, 1, f); env[-f:] = np.linspace(1, 0, f)
         place(amb, a * env, starts[i])
     vo, spans = np.zeros(N), []
-    V = C.get('vo', {'lines': []})
-    for ln in V['lines']:
+    V = C.get('vo') or {}
+    for ln in V.get('lines', []):
         p = f"{T}/{ln['id']}.wav"
-        sh('ffmpeg', '-y', '-v', 'error', '-i', os.path.join(P(V['dir']), ln['id'] + '.wav'), '-af',
+        sh('ffmpeg', '-y', '-v', 'error', '-i', str(narration_source(V, ln, base)), '-af',
            'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,'
-           f"atempo={V.get('tempo', 0.92)},aresample={SR},highpass=f=80,acompressor=threshold=-18dB:ratio=3", '-ac', '1', p)
+           f"atempo={V.get('tempo', 1.0)},aresample={SR},highpass=f=80,acompressor=threshold=-18dB:ratio=3", '-ac', '1', p)
         _, a = wavfile.read(p); a = a.astype(np.float64) / 32768
-        t0 = at(ln); place(vo, a / (np.abs(a).max() + 1e-9) * 0.9, t0); spans.append((t0, t0 + len(a) / SR, ln))
+        t0 = at(ln)
+        if t0 < 0 or t0 + len(a) / SR > TOTAL + 0.02:
+            raise ValueError(f"Narration {ln['id']} runs outside the edit; adjust its start or provide a shorter recording.")
+        place(vo, a / (np.abs(a).max() + 1e-9) * 0.9, t0); spans.append((t0, t0 + len(a) / SR, ln))
     print('vo', [(round(a, 2), round(b, 2), l['id']) for a, b, l in spans])
     duck = np.ones(N)
     for a, b, _ in spans: duck[max(0, int((a - .25) * SR)):int((b + .4) * SR)] = 0.45

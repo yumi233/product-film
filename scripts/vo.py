@@ -9,13 +9,14 @@ Defaults: voice Uncle_Fu, documentary instruct. Slow-down (0.92x) and silence tr
 Prints duration and the ASR transcript per line; homophones in the transcript (查/茶) are fine, missing or extra
 words are not -> regenerate that line. Lines longer than ~1.4 s per 4 characters usually have long pauses: split them.
 """
-import glob, json, os, subprocess, sys, tempfile
+import glob, json, os, shutil, subprocess, sys, tempfile
 
 def tts_dir():
     if os.environ.get('QWEN3_TTS_DIR'): return os.path.expanduser(os.environ['QWEN3_TTS_DIR'])
     for c in [os.path.expanduser('~/qwen3-tts')] + sorted(glob.glob(os.path.expanduser('~/AI/qwen3-tts*'))):
         if os.path.isdir(os.path.join(c, 'models')): return c
-    sys.exit('Qwen3-TTS folder not found: set QWEN3_TTS_DIR')
+    sys.exit('Optional Qwen3-TTS was not found. Ask the user for recorded narration (WAV/MP3/M4A/FLAC) '
+             'and import it into cut.py with vo.lines[].path. Do not generate narration inside video clips.')
 
 
 Q = tts_dir()
@@ -24,17 +25,27 @@ TTS = f'{Q}/models/Qwen3-TTS-12Hz-0.6B-CustomVoice-4bit'
 ASR = f'{Q}/models/Qwen3-ASR-0.6B-8bit'
 VOICE = os.environ.get('VO_VOICE', 'Uncle_Fu')
 INSTRUCT = os.environ.get('VO_INSTRUCT', '用低沉、温润、缓慢的纪录片旁白语气朗读，语气平静克制。')
+# Voice clone (recommended for a whole film): VO_REF=ref.wav VO_REF_TEXT="transcript of ref.wav".
+# Every line is then spoken by the same cloned voice with the Base model; CustomVoice + instruct re-imagines the
+# speaker per line and pitch drifted 86-210 Hz across 13 lines.
+REF, REF_TEXT = os.environ.get('VO_REF'), os.environ.get('VO_REF_TEXT', '')
+BASE = f'{Q}/models/Qwen3-TTS-12Hz-0.6B-Base-4bit'
+TEMP = os.environ.get('VO_TEMP', '0.6')
 
 
 def say(text, out):
     d = tempfile.mkdtemp(prefix='vo_')
-    subprocess.run([PY, '-m', 'mlx_audio.tts.generate', '--model', TTS, '--text', text, '--voice', VOICE,
-                    '--instruct', INSTRUCT, '--lang_code', 'Chinese', '--output_path', d, '--file_prefix', 'x',
+    if REF:
+        args = ['--model', BASE, '--ref_audio', REF, '--ref_text', REF_TEXT]
+    else:
+        args = ['--model', TTS, '--voice', VOICE, '--instruct', INSTRUCT]
+    subprocess.run([PY, '-m', 'mlx_audio.tts.generate', *args, '--text', text, '--temperature', TEMP,
+                    '--lang_code', 'Chinese', '--output_path', d, '--file_prefix', 'x',
                     '--join_audio', '--audio_format', 'wav'], capture_output=True)
     wav = [f for f in os.listdir(d) if f.endswith('.wav')]
     if not wav: print('FAIL', text); return None
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
-    os.replace(os.path.join(d, wav[0]), out)
+    shutil.move(os.path.join(d, wav[0]), out)  # move, not rename: out may be on another disk
     dur = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', out],
                                capture_output=True, text=True).stdout)
     t = tempfile.mktemp()

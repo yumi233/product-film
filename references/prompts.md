@@ -4,6 +4,11 @@
 
 ## H3 视频（rh_run.py）
 
+**声音规则适用于下方所有视频模板**：只生成与画面同步的环境声和非语言音效，不生成旁白、对白、唱歌或配乐。人物可以做事但不开口；不把旁白台词填入视频提示词。`rh_run.py`会自动追加以下要求，其他入口需明确加入：
+```text
+Generate only natural non-verbal location ambience and synchronized sound effects. No narration, no voice-over, no spoken dialogue, no intelligible speech, no singing and no music. People remain silent. Narration and music will be added separately in post-production.
+```
+
 ### 参考图的角色
 - 只给一张图：H3 基本把它当首帧，画面会很接近原图。适合「让这张图动起来」。
 - 给两张图：在提示词里写明 `Image 1 is the exact FIRST frame and image 2 is the exact LAST frame`。结尾会靠近第二张，但不一定完全一样，剪辑时由 cut.py 自动找帧对齐。
@@ -43,7 +48,17 @@ keeps its exact design. Slow <推/环绕> camera.
 
 **提高动感**：写清楚镜头运动，比如 `dolly forward`、`orbit`、`crane up`、`pan left`；加上前景遮挡（`foreground leaves sweep past the lens`）；画面里要有具体的动作（倒、举、落、扇）。光写 `slow camera movement` 只会让画面「动一下下」。
 
-## Codex 关键帧（keyframe.py）
+### 单张起始帧 + 自由运镜（现在的默认写法，10–15 秒）
+```
+Image 1 is the FIRST frame. <其余参考图各自是什么：产品渲染图、人物定妆>. <画风或去油风格段>.
+Over 15 seconds: <镜头运动，具体到方向和节奏：slow dolly in / orbit 30° to the left / crane up>, <画面里依次发生的 2–3 件事>.
+Keep <产品> exactly as the render: <结构要点>. No cuts, no new people, no text.
+```
+- 不写「image 2 is the exact LAST frame」；结尾交给剪辑。
+- 15 秒里安排「先远后近」或「先动作后细节」，方便剪成两个镜头。
+- 出画镜头写：the silk texture and ink lines fade away from the <product> like a thin sheet of paper, revealing real walnut and brushed steel; the painted surroundings dissolve into a warm grey-beige space.
+
+## 关键帧（ChatGPT 网页 gpt_web.py；备选 Codex keyframe.py）
 
 ### 定妆图
 ```
@@ -84,3 +99,72 @@ exactly (<结构要点>); only the rendering style changes.
 
 ## 通用的排除词
 `no text, no watermark, no logos, no extra legs, no melting metal, no style change`。按镜头补充具体会出错的东西，比如 `rattan`、`brush instead of whisk`、`second armrest`。
+
+
+---
+
+## 写实画面「去油」（用户定稿的写法）
+
+用户眼里「油」的东西：深蓝天 + 完美白云、饱和的绿、黄昏橙金、太阳和反光点、HDR 感、过度锐化、图库照片式的标准构图。
+用户眼里「灰」的东西：雾蒙蒙的黄昏、整体发闷。
+改法不是加「not oily」，而是**换成真实胶片摄影的语言**：具体时间和光、具体胶片、具体颜色、不完美的构图。用户不满意时，一次给 4–5 种思路并排挑（Portra 过曝、明亮阴天、Fuji 淡彩、午后侧光、逆光柳叶），不要只改一个形容词。
+
+### 白天 L6（默认，用户选定）
+```
+LOOK (apply to the whole image): around 3 pm, soft sunlight from the side through thin high haze; the sky and the far lake are pale and bright, NOT blue-saturated; warm-neutral colours, foliage a muted yellow-green, wood a natural mid-brown (not orange), steel neutral grey, linen true off-white; gentle shadows, modest contrast, open shadows; Kodak Gold 200 colour negative, 35mm, natural fine grain. It must look like a real documentary photograph from a film roll: NOT a stock photo, NOT glossy, NOT saturated orange, no golden-hour glow, no sun glints, no lens flare, no HDR, no sharpening halos.
+```
+
+### 夜景
+```
+Night, lit only by the warm paper pendant lamp and a little cool blue dusk from outside; quiet, low contrast, deep but open shadows (no crushed
+blacks), warm light not orange-saturated, Kodak Portra 800 35mm grain; a real documentary photograph, not a rendering, no glow halos, no lens flare.
+```
+
+### 雨天
+```
+Overcast rainy afternoon: soft even grey-white light, wet dark stone, fine rain visible against dark eaves, water dripping from the roof edge;
+colours quiet and natural; Fuji colour negative 35mm grain, low contrast; a real documentary photograph, not glossy, no HDR.
+```
+
+## 画中（工笔）
+```
+Ming dynasty blue-green gongbi painting on old silk, the SAME painting style and silk as the reference painting: fine even ink outlines, flat faded
+colour washes, no photographic texture, no CG shading, faint craquelure. Furniture is PAINTED in the same technique (ruled jiehua lines,
+ochre-brown walnut wash, pale silver-grey steel with thin white highlight lines). No text, no seals.
+```
+- 画中产品：参考图 = 画中场景 + 渲染图，整张生成。写清「same horizon, legs on the floor, inside the railing」，否则椅子会飘到亭子外面。
+- 「破碎感」= 老绢的裂纹、水渍、颜料剥落、断续的细线；不是画面支离破碎。
+
+## 空间与摆放（每条含家具的提示词都加）
+```
+Correct perspective: one horizon and one set of vanishing points for everything; every leg on the floor with soft contact shadows; believable real
+scale (table top 0.75 m, seat 0.45 m, people ~1.7 m); furniture placed where people would really put it.
+```
+再写清：每件在哪、朝哪（主位椅在桌后长边面向客人，客位椅在侧面或对面朝向主人）、机位高度。
+
+## 爆炸图（暖灰棚拍，和出画画面同色）
+```
+Image 1 is the exploded view of OUR <product>. Re-shoot it exactly as image 1 (same parts, separation and angle, every screw and dashed guide line)
+in the warm grey-beige studio of image 2. Clean warm grey-beige seamless studio (the colour of faded silk), soft even light, soft contact shadows;
+photorealistic product photograph, restrained, no glossy CG look.
+```
+
+## 在用户场景图上加人
+```
+Image 1 is a real <space> with OUR furniture. Keep ALL furniture exactly as in image 1 (pieces, positions, every structural detail). Add <people>:
+<谁坐在哪把椅子上、在做什么>. They sit properly: hips on the seat, backs near the backrest, feet on the floor, forearms at table height.
+Same camera and framing as image 1.
+```
+加人后检查：人坐的是不是那把椅子（主人常被放到客位椅上）、有没有悬空坐、动作合不合理（注水要揭盖）、被提起的水壶下面那块电磁炉还在不在。
+
+## 局部修改（结构错了、道具错了）
+```
+Edit image 1. Change ONLY these things, keep everything else exactly the same: (1) ... (2) ...
+```
+一次改 1–3 处，逐条写清楚，并附该部件的渲染图。
+
+## 统一调色（已有的图换风格）
+```
+Re-grade image 1 so its light and colour match the photograph style of image 2. <风格段> Change only light and colour; keep people, furniture,
+objects, architecture and framing exactly.
+```

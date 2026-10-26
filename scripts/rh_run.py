@@ -6,11 +6,14 @@ Batch (sequential, skips clips already downloaded):
     python3 rh_run.py --batch shots.json          # [{"name", "prompt", "refs": [...], "secs"?}, ...]
 Balance:
     python3 rh_run.py --check
+Recover a run that was killed after the task was created (ids are logged in <out-dir>/rh_tasks.log):
+    python3 rh_run.py --fetch TASK_ID --name 1-2 --out-dir videos/raw
 
 Key: env RUNNINGHUB_API_KEY (never print it). Concurrency is 1 task per account, so clips run one after another.
 Output: <out-dir>/<name>.mp4, and one line per clip "SAVED <path> coins <n>".
 """
 import argparse, json, os, subprocess, sys, time
+from audio_policy import generation_prompt
 
 HOST = 'https://www.runninghub.cn'
 # AITUDOU MiniMax H3 ReferenceToVideo workflow and its editable nodes
@@ -48,6 +51,7 @@ def run(name, prompt, refs, secs=8, mp=2.07, lowres=0.66, out_dir='.', workflow=
     out = os.path.join(out_dir, f'{name}.mp4')
     if os.path.exists(out):
         print('SKIP (exists)', out, flush=True); return out
+    prompt = generation_prompt(prompt)  # ambience/effects only; narration is mixed separately
     files = [upload(p) for p in refs]
     files = (files * 4)[:4]                    # every LoadImage needs a file; repeat refs to fill 4 slots
     nodes = [{'nodeId': n, 'fieldName': 'image', 'fieldValue': f} for n, f in zip(REF_NODES, files)]
@@ -62,6 +66,15 @@ def run(name, prompt, refs, secs=8, mp=2.07, lowres=0.66, out_dir='.', workflow=
             time.sleep(30); continue
         print('CREATE FAILED', name, json.dumps(c, ensure_ascii=False), flush=True); return None
     tid = c['data']['taskId']; print('task', name, tid, flush=True)
+    os.makedirs(out_dir, exist_ok=True)  # keep the id on disk: a killed run can be recovered with --fetch
+    with open(os.path.join(out_dir, 'rh_tasks.log'), 'a') as log:
+        log.write(f'{time.strftime("%Y-%m-%d %H:%M:%S")}\t{name}\t{tid}\n')
+    return fetch(name, tid, out_dir)
+
+
+def fetch(name, tid, out_dir='.'):
+    """Wait for task `tid` and download its video to <out_dir>/<name>.mp4 (also used to recover a killed run)."""
+    out = os.path.join(out_dir, f'{name}.mp4')
     status = None
     for _ in range(360):
         time.sleep(20)
@@ -88,9 +101,12 @@ if __name__ == '__main__':
     ap.add_argument('--out-dir', default='videos/raw')
     ap.add_argument('--workflow', default=WORKFLOW)
     ap.add_argument('--batch'); ap.add_argument('--check', action='store_true')
+    ap.add_argument('--fetch', metavar='TASK_ID', help='download a finished task by id (see <out-dir>/rh_tasks.log)')
     a = ap.parse_args()
     if a.check:
         check()
+    elif a.fetch:
+        fetch(a.name, a.fetch, a.out_dir)
     elif a.batch:
         base = os.path.dirname(os.path.abspath(a.batch))
         for s in json.load(open(a.batch)):
