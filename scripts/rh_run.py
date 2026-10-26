@@ -47,7 +47,7 @@ def check():
                       'running_tasks': d.get('currentTaskCounts')}, ensure_ascii=False))
 
 
-def run(name, prompt, refs, secs=8, mp=2.07, lowres=0.66, out_dir='.', workflow=WORKFLOW):
+def run(name, prompt, refs, secs=8, mp=2.07, lowres=0.66, out_dir='.', workflow=WORKFLOW, plus=False):
     out = os.path.join(out_dir, f'{name}.mp4')
     if os.path.exists(out):
         print('SKIP (exists)', out, flush=True); return out
@@ -60,7 +60,10 @@ def run(name, prompt, refs, secs=8, mp=2.07, lowres=0.66, out_dir='.', workflow=
               {'nodeId': MP_NODE, 'fieldName': 'megapixels', 'fieldValue': str(mp)},
               {'nodeId': LOWRES_NODE, 'fieldName': 'lowres_scale', 'fieldValue': str(lowres)}]
     for attempt in range(60):                  # TASK_QUEUE_MAXED (421) -> wait for the running task
-        c = post('/task/openapi/create', {'apiKey': key(), 'workflowId': workflow, 'nodeInfoList': nodes})
+        body = {'apiKey': key(), 'workflowId': workflow, 'nodeInfoList': nodes}
+        if plus:   # 48G 'Plus' machine: avoids OutOfMemory on long / high-res clips; costs more coins
+            body['instanceType'] = 'plus'
+        c = post('/task/openapi/create', body)
         if c.get('code') == 0: break
         if c.get('code') == 421 or 'QUEUE' in str(c.get('msg')):
             time.sleep(30); continue
@@ -81,7 +84,13 @@ def fetch(name, tid, out_dir='.'):
         status = post('/task/openapi/status', {'apiKey': key(), 'taskId': tid}).get('data')
         if status in ('SUCCESS', 'FAILED'): break
     o = post('/task/openapi/outputs', {'apiKey': key(), 'taskId': tid})
-    for f in o.get('data') or []:
+    data = o.get('data')
+    if isinstance(data, dict):   # a failed task returns {"failedReason": {...}} instead of a list of files
+        fr = data.get('failedReason') or {}
+        print('FAILED', name, status, fr.get('exception_type'), '(failed tasks are not charged; usually server '
+              'OutOfMemory - rerun, or use --secs 10 / a lower --mp)', flush=True)
+        return None
+    for f in data or []:
         if str(f.get('fileUrl', '')).endswith('.mp4'):
             os.makedirs(out_dir, exist_ok=True)
             subprocess.run(['curl', '-s', '-o', out, f['fileUrl']])
@@ -100,6 +109,7 @@ if __name__ == '__main__':
     ap.add_argument('--lowres', type=float, default=0.66, help='first-pass scale per side (~0.9 MP first pass)')
     ap.add_argument('--out-dir', default='videos/raw')
     ap.add_argument('--workflow', default=WORKFLOW)
+    ap.add_argument('--plus', action='store_true', help='run on the 48G Plus GPU (fewer OOM failures, more coins)')
     ap.add_argument('--batch'); ap.add_argument('--check', action='store_true')
     ap.add_argument('--fetch', metavar='TASK_ID', help='download a finished task by id (see <out-dir>/rh_tasks.log)')
     a = ap.parse_args()
@@ -111,6 +121,6 @@ if __name__ == '__main__':
         base = os.path.dirname(os.path.abspath(a.batch))
         for s in json.load(open(a.batch)):
             refs = [r if os.path.isabs(r) else os.path.join(base, r) for r in s['refs']]
-            run(s['name'], s['prompt'], refs, s.get('secs', a.secs), a.mp, a.lowres, a.out_dir, a.workflow)
+            run(s['name'], s['prompt'], refs, s.get('secs', a.secs), a.mp, a.lowres, a.out_dir, a.workflow, a.plus)
     else:
-        run(a.name, a.prompt, a.refs, a.secs, a.mp, a.lowres, a.out_dir, a.workflow)
+        run(a.name, a.prompt, a.refs, a.secs, a.mp, a.lowres, a.out_dir, a.workflow, a.plus)

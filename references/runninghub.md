@@ -43,3 +43,10 @@
 - `RH Suno_Single`（webappId 1972977443998928898）：作曲，但输出带人声的歌，计费方式也没确认，用之前先问用户。
 - `IndexTTS2`（webappId 1965684535247650818）：声音克隆，需要一段参考录音。
 - 查应用的节点：`python3 ~/.claude/skills/runninghub/scripts/runninghub_app.py --info <webappId>`。
+
+## Plus 大显存（48G）
+- `rh_run.py --plus` 在创建任务时加 `instanceType: "plus"`，对应网页上的「Lite/Plus 运行」。
+- 什么时候用：15 秒长镜、2.07 MP 高分辨率，或者默认机器报 `torch.OutOfMemoryError` 时。
+- 代价（实测 2026-10-27）：15 秒 2.07 MP 一条 **508 币、用时 21 分钟**，约为默认机器同等时长的 2.7 倍，而且并不更快。用户认为太贵，**默认不用**，只在用户明确同意时用。
+- 实测默认机器：10 秒稳定（约 133 币）；15 秒连续两次 OutOfMemory（失败不扣费）。所以默认 `--secs 10`。
+- 失败不扣费；任务编号同样记进 `rh_tasks.log`。

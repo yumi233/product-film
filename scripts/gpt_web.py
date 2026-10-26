@@ -1,10 +1,11 @@
 """Keyframes on the ChatGPT web app, through the user's logged-in Chrome (browser-skill / `bsk` CLI).
 
-    python3 -u gpt_web.py jobs.json [ID ...]          # no IDs = every job; existing outputs are skipped
+    python3 -u gpt_web.py jobs.json [ID ...] [--per-chat=8]   # no IDs = every job; existing outputs are skipped
 
 jobs.json: {"style": "appended to every prompt", "jobs": [{"id", "out", "refs": [...], "prompt", "style"?}]}
-Paths are relative to the current directory. One fresh chat per job, ONE JOB AT A TIME: parallel windows
-break the attach menu, and the user's Mac gets slow. Prints "OK <id> <secs>s <out>" / "FAIL <id> <why>".
+Paths are relative to the current directory. ONE JOB AT A TIME in ONE chat: images keep coming in the same
+conversation; after --per-chat images (default 8) or after a failure it opens a fresh chat. Never run several
+windows in parallel: that breaks the attach menu and slows the user's Mac. Prints "OK <id> <secs>s <out>" / "FAIL <id> <why>".
 
 Needs: `bsk` CLI + BrowserSkill extension in Chrome with "Allow access to file URLs" on, and the user
 signed in to chatgpt.com. Works with the Chinese or English ChatGPT UI. See references/web-image.md.
@@ -40,7 +41,36 @@ def ref_of(sid, pattern, page=None):
     return m and m.group(1)
 
 
-def run(job, style):
+class Chat:
+    """One Agent Window with one ChatGPT conversation, reused for up to PER_CHAT images, then a fresh chat.
+    Reusing the chat skips the page load and keeps the style context; a new chat every ~8 images keeps the
+    page light and stops earlier images from leaking into later ones."""
+
+    def __init__(self, per_chat):
+        self.per_chat, self.sid, self.used = per_chat, None, 0
+
+    def page(self):
+        if self.sid is None:
+            self.sid = json.loads(bsk('session', 'start', '--json', '--name', 'gpt-web'))['session_id']
+        if self.used == 0 or self.used >= self.per_chat:
+            bsk('navigate', 'https://chatgpt.com/', '--session', self.sid, check=False)  # new chat; load may time out
+            time.sleep(8)
+            self.used = 0
+        return self.sid
+
+    def reset(self):  # after a failure, start over in a fresh chat
+        self.used = 0
+
+    def close(self):
+        if self.sid:
+            bsk('session', 'stop', self.sid, check=False)
+
+
+def count_images(sid):
+    return int(bsk('evaluate', STATE_JS, '--session', sid).strip().splitlines()[-1].split()[0])
+
+
+def run(job, style, chat):
     if os.path.exists(job['out']):
         print('SKIP', job['id'], job['out'], flush=True); return True
     tmp = tempfile.mkdtemp(prefix='gw_')
@@ -49,10 +79,9 @@ def run(job, style):
         p = os.path.join(tmp, f'ref{k}.jpg')
         subprocess.run(['magick', r, '-resize', '1600x1600>', '-quality', '88', p], check=True)
         refs.append(p)
-    sid = json.loads(bsk('session', 'start', '--json', '--name', job['id']))['session_id']
     try:
-        bsk('navigate', 'https://chatgpt.com/', '--session', sid, check=False)  # load event may time out
-        time.sleep(8)
+        sid = chat.page()
+        before = count_images(sid)
         if refs:
             for _ in range(6):  # page may still be loading: reopen the attach menu until the item shows
                 btn = ref_of(sid, ATTACH)
@@ -70,13 +99,14 @@ def run(job, style):
                 time.sleep(2)
                 if not re.search(PENDING, bsk('observe', '--session', sid)):
                     break
-        intro = ('The attached images are references, in order: image 1, image 2, ... '
-                 'Generate ONE image now, 16:9 landscape, no text, no questions. ') if refs else \
-                'Generate ONE image, 16:9 landscape, no text, no questions. '
+        intro = ('NEW, SEPARATE IMAGE. Ignore earlier images in this chat unless attached again. ' if chat.used else '') + (
+                ('The attached images are references, in order: image 1, image 2, ... '
+                 'Generate ONE image now, 16:9 landscape, no text, no questions. ') if refs else
+                'Generate ONE image, 16:9 landscape, no text, no questions. ')
         text = intro + job['prompt'] + ' ' + job.get('style', style)
-        js = ('(()=>{const e=document.querySelector("[contenteditable=true]");e.focus();'
+        js = ('(()=>{const e=[...document.querySelectorAll("[contenteditable=true]")].filter(x=>x.offsetParent).pop();e.focus();'
               'document.execCommand("insertText",false,' + json.dumps(text) + ');return e.innerText.length})()')
-        bsk('click', '[contenteditable=true]', '--session', sid)
+        bsk('click', '#prompt-textarea', '--session', sid, check=False)   # later turns: a hidden editor may also match
         bsk('evaluate', js, '--session', sid)   # `bsk fill` loses focus in ChatGPT's editor; insertText works
         time.sleep(1)
         bsk('press', 'Enter', '--session', sid)
@@ -92,23 +122,27 @@ def run(job, style):
         while time.time() - t0 < 900:
             time.sleep(10)
             n, busy = bsk('evaluate', STATE_JS, '--session', sid).strip().splitlines()[-1].split()
-            if int(n) > 0 and busy == 'false':
+            if int(n) > before and busy == 'false':   # a NEW image in this chat, generation finished
                 break
         else:
-            print('TIMEOUT', job['id'], flush=True); return False
-        data = bsk('evaluate', SAVE_JS, '--session', sid).strip().splitlines()[-1]
+            print('TIMEOUT', job['id'], flush=True); chat.reset(); return False
+        data = bsk('evaluate', SAVE_JS, '--session', sid).strip().splitlines()[-1]   # SAVE_JS takes the last image
         os.makedirs(os.path.dirname(os.path.abspath(job['out'])) or '.', exist_ok=True)
         open(job['out'], 'wb').write(base64.b64decode(data.split(',', 1)[1]))
+        chat.used += 1
         print(f'OK {job["id"]} {int(time.time() - t0)}s {job["out"]}', flush=True); return True
     except Exception as e:
-        print(f'FAIL {job["id"]} {e}', flush=True); return False
-    finally:
-        bsk('session', 'stop', sid, check=False)
+        print(f'FAIL {job["id"]} {e}', flush=True); chat.reset(); return False
 
 
 if __name__ == '__main__':
     d = json.load(open(sys.argv[1]))
-    want = sys.argv[2:]
-    for j in [j for j in d['jobs'] if not want or j['id'] in want]:
-        if not run(j, d.get('style', '')):   # one retry: most failures are a slow page or a missed click
-            run(j, d.get('style', ''))
+    want = [a for a in sys.argv[2:] if not a.startswith('--per-chat')]
+    per = int(next((a.split('=')[1] for a in sys.argv[2:] if a.startswith('--per-chat=')), 8))
+    chat = Chat(per)
+    try:
+        for j in [j for j in d['jobs'] if not want or j['id'] in want]:
+            if not run(j, d.get('style', ''), chat):   # one retry in a fresh chat
+                run(j, d.get('style', ''), chat)
+    finally:
+        chat.close()
