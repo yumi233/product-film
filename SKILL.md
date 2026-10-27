@@ -32,7 +32,7 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 | bsk 命令行 | `bsk browsers` | AI 能装就自己装；扩展本身要用户在 Chrome 里添加 |
 | 扩展「允许访问文件网址」 | 上传参考图报 Not allowed | **用户做**（AI 改不了 Chrome 设置） |
 | ChatGPT / Gemini 登录 | 用 bsk 打开看是否已登录 | **用户做**，绝不代输密码 |
-| RunningHub key | macOS `zsh -ic "python3 scripts/rh_run.py --check"`；Windows `python scripts/rh_run.py --check` | **用户做**：官网个人中心 → API 控制台复制 key；Windows 在 PowerShell 运行 `setx RUNNINGHUB_API_KEY "<粘贴>"` 后重开终端；macOS 在终端运行 `echo 'export RUNNINGHUB_API_KEY="<粘贴>"' >> ~/.zshrc`；**不要让用户把 key 贴进聊天**。用户说配好后 AI 自己 `--check` |
+| RunningHub key | macOS `zsh -ic "python3 scripts/rh_run.py --check"`；Windows `python scripts/rh_run.py --check` | **用户做**：runninghub.cn 顶部 API → 获取密钥 → 左侧「消费级-会员」复制 key（详见 setup.md）；Windows 在 PowerShell 运行 `setx RUNNINGHUB_API_KEY "<粘贴>"` 后重开终端；macOS 在终端运行 `echo 'export RUNNINGHUB_API_KEY="<粘贴>"' >> ~/.zshrc`；**不要让用户把 key 贴进聊天**。用户说配好后 AI 自己 `--check` |
 | 旁白来源 | 先确认用户有成品录音，或已有且愿意使用的本机TTS | 没有Qwen3时向用户索要最终旁白音频和对应文稿；不把安装模型当作必需步骤 |
 
 - 能自己装的直接装好，装完告诉用户装了什么；**不要跳过、不要假装有**。

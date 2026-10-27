@@ -49,6 +49,14 @@ python3 -m venv .venv && .venv/bin/pip install -r ~/.claude/skills/product-film/
 没有 browser-skill 时的退路：Claude in Chrome 扩展也能点网页，但上传和下载要用户批准；或者退回 Codex 生图。
 
 ## RunningHub
+### 怎么拿到 API Key（2026-10 核对过网页）
+1. 浏览器打开 `https://www.runninghub.cn` 并登录。
+2. 点顶部导航的 **API**，进入 API 页面后点 **获取密钥**（或右上角 **控制台**）。会到 `runninghub.cn/call-api/bill-task?tab=keys`。
+3. 左侧栏「密钥」下点 **消费级-会员**（本技能用这个：扣 RH 币，可跑 AI 应用和工作流）。不要选「企业级-共享」，那是另一套计费。
+4. 列表里会有一条 `default` 密钥，页面上只显示前后几位（形如 `1234****abcd`）；用旁边的复制/查看按钮取得完整密钥。没有的话先开通会员或按页面提示创建。
+5. 按下面配置到电脑里。**不要发到聊天里**；泄露了就在同一页点「重置」。
+
+### 配置到电脑
 - 需要**会员 API key**（扣 RH 币）。用户自己写进 `~/.zshrc`：`export RUNNINGHUB_API_KEY=...`。运行时用 `zsh -ic "python3 ..."` 才读得到。
 - **不要让用户把 key 贴进聊天，也不要打印 key。**
 - Windows：在 PowerShell 运行 `setx RUNNINGHUB_API_KEY "<密钥>"`，重开终端后生效，直接 `python scripts/rh_run.py --check`（不需要 zsh）。

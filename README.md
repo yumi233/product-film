@@ -52,7 +52,7 @@ https://github.com/user-attachments/assets/0f44856e-804b-425f-b09a-72628893123d
 
 1. **打开浏览器插件的文件访问**：Chrome 地址栏打开 `chrome://extensions` → 找到 browser-skill 点「详情」→ 打开「允许访问文件网址」。不开的话，AI 上传参考图会报 Not allowed。
 2. **登录 ChatGPT 和 Gemini**：在同一个 Chrome 里自己登录；账号密码只由你输入。
-3. **配 RunningHub 密钥**：登录 runninghub.cn → 个人中心 → API 控制台（以官网实际页面为准）→ 复制 API Key → 在终端运行下面这行（把引号里换成你的密钥），然后告诉 AI「配好了」，它会自己检查连接和余额。**不要把密钥发到聊天里。**
+3. **配 RunningHub 密钥**：登录 [runninghub.cn](https://www.runninghub.cn) → 顶部点 **API** → **获取密钥** → 左侧「密钥」选 **消费级-会员** → 复制 `default` 那条密钥（页面只显示前后几位，用旁边的复制按钮）→ 在终端运行下面这行（把引号里换成你的密钥），然后告诉 AI「配好了」，它会自己检查连接和余额。**不要把密钥发到聊天里。**
 
    **macOS**（终端）：
 
