@@ -1,6 +1,6 @@
 # product-film
 
-用 AI 给**家具或产品**做 1–3 分钟介绍短片的技能，Claude Code 和 Codex 都能用。
+用 AI 给**家具或产品**做 1–3 分钟介绍短片的技能，Claude Code 和 Codex 都能用，macOS 和 Windows 都能用。
 
 从方案、完整脚本、关键帧、视频生成、旁白、配乐一直做到粗剪。每一步先给你看，你点头才往下做；花钱之前一定先问。
 
@@ -54,8 +54,16 @@ https://github.com/user-attachments/assets/0f44856e-804b-425f-b09a-72628893123d
 2. **登录 ChatGPT 和 Gemini**：在同一个 Chrome 里自己登录；账号密码只由你输入。
 3. **配 RunningHub 密钥**：登录 runninghub.cn → 个人中心 → API 控制台（以官网实际页面为准）→ 复制 API Key → 在终端运行下面这行（把引号里换成你的密钥），然后告诉 AI「配好了」，它会自己检查连接和余额。**不要把密钥发到聊天里。**
 
+   **macOS**（终端）：
+
    ```bash
    echo 'export RUNNINGHUB_API_KEY="粘贴你的密钥"' >> ~/.zshrc
+   ```
+
+   **Windows**（PowerShell，运行后重开终端）：
+
+   ```powershell
+   setx RUNNINGHUB_API_KEY "粘贴你的密钥"
    ```
 
 之后你要做的：交每件产品的渲染图、爆炸图、细节图和场景图；审方案、脚本、图文分镜和每一幕视频。花 RH 币之前它一定先问你。
@@ -84,11 +92,11 @@ https://github.com/user-attachments/assets/0f44856e-804b-425f-b09a-72628893123d
 
 | 必需 | 说明 |
 |---|---|
-| macOS | 脚本在 macOS 上测试 |
+| macOS 或 Windows 10/11 | 两边流程一样；脚本自动识别系统（安装命令、字体、密钥读取方式不同） |
 | Python 3.9+ | `pip install -r requirements.txt`（numpy、scipy、Pillow）。系统自带的 python 没有这些库时，建一个 venv |
-| ffmpeg、ImageMagick 7 | `brew install ffmpeg imagemagick` |
+| ffmpeg、ImageMagick 7 | macOS：`brew install ffmpeg imagemagick`；Windows：`winget install Gyan.FFmpeg` 和 `winget install ImageMagick.ImageMagick`（AI 会自己装） |
 | Chrome + browser-skill | `bsk` 命令行和 Chrome 扩展；扩展详情里打开「允许访问文件网址」；在 Chrome 里登录 ChatGPT 和 Gemini |
-| RunningHub 会员 API key | 写进 `~/.zshrc`：`export RUNNINGHUB_API_KEY=...`。不要贴进聊天 |
+| RunningHub 会员 API key | macOS 写进 `~/.zshrc`；Windows 用 `setx RUNNINGHUB_API_KEY`。不要贴进聊天 |
 
 | 可选 | 说明 |
 |---|---|
@@ -115,7 +123,7 @@ git clone https://github.com/yumi233/product-film ~/.claude/skills/product-film
 ```bash
 ln -s ~/.claude/skills/product-film ~/.codex/skills/product-film
 ```
-只用 Codex 时，直接 clone 到 `~/.codex/skills/product-film`。
+只用 Codex 时，直接 clone 到 `~/.codex/skills/product-film`。Windows 上 `~` 是 `%USERPROFILE%`，不能软链接时直接各 clone 一份。
 
 ---
 

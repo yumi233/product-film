@@ -81,7 +81,8 @@ def tail_logs(root):
 
 def balance():
     here = os.path.dirname(os.path.abspath(__file__))
-    out = sh('zsh', '-ic', f'python3 "{here}/rh_run.py" --check', timeout=40)
+    out = (sh(sys.executable, os.path.join(here, 'rh_run.py'), '--check', timeout=40) if os.name == 'nt'
+           else sh('zsh', '-ic', f'python3 "{here}/rh_run.py" --check', timeout=40))
     m = re.search(r'"coins":\s*"?(\d+)', out)
     return m.group(1) if m else '查询失败'
 

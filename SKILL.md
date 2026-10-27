@@ -9,7 +9,7 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 
 在 Claude Code 和 Codex 里用法一样，见 `references/setup.md`。
 
-运行环境：macOS. Python 3.9+ with numpy, scipy, Pillow (requirements.txt); ffmpeg; ImageMagick 7; Chrome + browser-skill (`bsk` CLI and extension) for ChatGPT/Gemini web; RunningHub member API key in env RUNNINGHUB_API_KEY; Narration: user-supplied WAV/MP3/M4A/FLAC, or optional local Qwen3-TTS + ASR via mlx-audio. Optional: Codex CLI (fallback image generation).
+运行环境：macOS or Windows 10/11 (scripts detect the OS; Windows uses winget, SimSun/Times New Roman fonts and setx for the key; local Qwen3-TTS via mlx-audio is Apple-silicon only, so Windows narration comes from user recordings). Python 3.9+ with numpy, scipy, Pillow (requirements.txt); ffmpeg; ImageMagick 7; Chrome + browser-skill (`bsk` CLI and extension) for ChatGPT/Gemini web; RunningHub member API key in env RUNNINGHUB_API_KEY; Narration: user-supplied WAV/MP3/M4A/FLAC, or optional local Qwen3-TTS + ASR via mlx-audio. Optional: Codex CLI (fallback image generation).
 
 **声音分工**：视频模型优先生成风、水、雨、脚步、杯盏等环境音效，禁止生成旁白、对白和唱歌。旁白与配乐单独在后期合成；环境声核听确认无意外人声后保留。未核听或含人声的原音轨先静音，不承诺能从混合音轨无损去掉说话声。
 
@@ -28,11 +28,11 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 | 检查 | 命令 | 谁来补 |
 |---|---|---|
 | Python 依赖 | `python3 -c "import numpy,scipy,PIL"` | **AI 自己装**：`python3 -m venv .venv && .venv/bin/pip install -r requirements.txt` |
-| ffmpeg / ImageMagick | `which ffmpeg magick` | **AI 自己装**：`brew install ffmpeg imagemagick`（没有 Homebrew 时才请用户装） |
+| ffmpeg / ImageMagick | `which ffmpeg magick` | **AI 自己装**：macOS `brew install ffmpeg imagemagick`（没有 Homebrew 时才请用户装）；Windows `winget install Gyan.FFmpeg` 和 `winget install ImageMagick.ImageMagick` |
 | bsk 命令行 | `bsk browsers` | AI 能装就自己装；扩展本身要用户在 Chrome 里添加 |
 | 扩展「允许访问文件网址」 | 上传参考图报 Not allowed | **用户做**（AI 改不了 Chrome 设置） |
 | ChatGPT / Gemini 登录 | 用 bsk 打开看是否已登录 | **用户做**，绝不代输密码 |
-| RunningHub key | `zsh -ic "python3 scripts/rh_run.py --check"` | **用户做**：官网个人中心 → API 控制台复制 key，在终端运行 `echo 'export RUNNINGHUB_API_KEY="<粘贴>"' >> ~/.zshrc`；**不要让用户把 key 贴进聊天**。用户说配好后 AI 自己 `--check` |
+| RunningHub key | macOS `zsh -ic "python3 scripts/rh_run.py --check"`；Windows `python scripts/rh_run.py --check` | **用户做**：官网个人中心 → API 控制台复制 key；Windows 在 PowerShell 运行 `setx RUNNINGHUB_API_KEY "<粘贴>"` 后重开终端；macOS 在终端运行 `echo 'export RUNNINGHUB_API_KEY="<粘贴>"' >> ~/.zshrc`；**不要让用户把 key 贴进聊天**。用户说配好后 AI 自己 `--check` |
 | 旁白来源 | 先确认用户有成品录音，或已有且愿意使用的本机TTS | 没有Qwen3时向用户索要最终旁白音频和对应文稿；不把安装模型当作必需步骤 |
 
 - 能自己装的直接装好，装完告诉用户装了什么；**不要跳过、不要假装有**。

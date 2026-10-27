@@ -25,11 +25,14 @@ def run(*a, timeout=20):
 # 1. Python packages (cut.py / score.py / voicestat.py)
 missing = [m for m in ('numpy', 'scipy', 'PIL') if importlib.util.find_spec(m) is None]
 row('Python: numpy / scipy / Pillow', not missing,
-    f'缺 {", ".join(missing)}。建一个 venv：python3 -m venv .venv && .venv/bin/pip install -r {SKILL}/requirements.txt，'
-    '之后剪辑用 .venv/bin/python 跑')
+    (f'缺 {", ".join(missing)}。建一个 venv：python -m venv .venv; .venv\\Scripts\\pip install -r {SKILL}\\requirements.txt，之后剪辑用 .venv\\Scripts\\python 跑'
+     if os.name == 'nt' else
+     f'缺 {", ".join(missing)}。建一个 venv：python3 -m venv .venv && .venv/bin/pip install -r {SKILL}/requirements.txt，之后剪辑用 .venv/bin/python 跑'))
 
 # 2. Command-line tools
-for tool, fix in [('ffmpeg', 'brew install ffmpeg'), ('magick', 'brew install imagemagick（需要 ImageMagick 7）')]:
+WIN = os.name == 'nt'
+for tool, fix in [('ffmpeg', 'winget install Gyan.FFmpeg' if WIN else 'brew install ffmpeg'),
+                  ('magick', ('winget install ImageMagick.ImageMagick' if WIN else 'brew install imagemagick') + '（需要 ImageMagick 7）')]:
     row(tool, shutil.which(tool) is not None, fix)
 
 # 3. Browser control for ChatGPT / Gemini web
@@ -48,14 +51,16 @@ zshrc = os.path.expanduser('~/.zshrc')
 has_key = bool(os.environ.get('RUNNINGHUB_API_KEY')) or (
     os.path.exists(zshrc) and 'RUNNINGHUB_API_KEY' in open(zshrc, errors='ignore').read())
 row('RunningHub 会员 key（RUNNINGHUB_API_KEY）', has_key,
-    '请用户自己在 ~/.zshrc 加一行 export RUNNINGHUB_API_KEY=...（不要贴进聊天）。查余额：zsh -ic "python3 scripts/rh_run.py --check"')
+    ('请用户自己在 PowerShell 运行 setx RUNNINGHUB_API_KEY "<密钥>"，然后重开终端（不要贴进聊天）。查余额：python scripts/rh_run.py --check'
+     if WIN else '请用户自己在 ~/.zshrc 加一行 export RUNNINGHUB_API_KEY=...（不要贴进聊天）。查余额：zsh -ic "python3 scripts/rh_run.py --check"'))
 
 # 5. Local TTS / ASR
 cands = [os.environ.get('QWEN3_TTS_DIR', '')] + [os.path.expanduser('~/qwen3-tts')] + \
         sorted(glob.glob(os.path.expanduser('~/AI/qwen3-tts*')))
 tts = next((c for c in cands if c and os.path.isdir(os.path.join(c, 'models'))), None)
 row('可选本机 Qwen3-TTS / ASR', tts is not None,
-    '没有模型时向用户索要最终旁白录音（WAV/MP3/M4A/FLAC）及对应文稿，后期直接导入；不必安装Qwen3', 'OPTIONAL')
+    '没有模型时向用户索要最终旁白录音（WAV/MP3/M4A/FLAC）及对应文稿，后期直接导入；不必安装Qwen3'
+    '（本机 Qwen3 用 mlx-audio，只能在 Apple 芯片 Mac 上跑；Windows 用录音）', 'OPTIONAL')
 if tts:
     models = os.listdir(os.path.join(tts, 'models'))
     row('声音克隆模型（Base）', any('Base' in m for m in models),

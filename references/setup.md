@@ -36,7 +36,7 @@ python3 -m venv .venv && .venv/bin/pip install -r ~/.claude/skills/product-film/
 `.venv/bin/python scripts/cut.py act.json`。
 
 ## 其他工具
-- `brew install ffmpeg imagemagick`（需要 ImageMagick 7 的 `magick` 命令）。
+- macOS：`brew install ffmpeg imagemagick`；Windows：`winget install Gyan.FFmpeg` 和 `winget install ImageMagick.ImageMagick`（需要 ImageMagick 7 的 `magick` 命令）。
 - 中文字体：标注总览图用 `/System/Library/Fonts/Hiragino Sans GB.ttc`；字幕用宋体（cut.py 自动找）。圆圈数字 ⑪ 以后在部分字体里缺字，编号用阿拉伯数字。
 
 ## 浏览器控制（ChatGPT / Gemini 网页出图）
@@ -51,7 +51,13 @@ python3 -m venv .venv && .venv/bin/pip install -r ~/.claude/skills/product-film/
 ## RunningHub
 - 需要**会员 API key**（扣 RH 币）。用户自己写进 `~/.zshrc`：`export RUNNINGHUB_API_KEY=...`。运行时用 `zsh -ic "python3 ..."` 才读得到。
 - **不要让用户把 key 贴进聊天，也不要打印 key。**
-- 自检：`zsh -ic "python3 scripts/rh_run.py --check"` 返回币数。
+- Windows：在 PowerShell 运行 `setx RUNNINGHUB_API_KEY "<密钥>"`，重开终端后生效，直接 `python scripts/rh_run.py --check`（不需要 zsh）。
+- 自检：macOS `zsh -ic "python3 scripts/rh_run.py --check"`，Windows `python scripts/rh_run.py --check`，返回币数。
+
+## Windows 说明
+- 流程和 macOS 完全一样；脚本按系统自动切换安装命令、字体（宋体 SimSun / Times New Roman）和密钥读取方式。
+- 文档里的 `python3` 在 Windows 上写作 `python`，venv 的程序在 `.venv\\Scripts\\` 下。
+- 本机 Qwen3-TTS（mlx-audio）只能在 Apple 芯片 Mac 上跑；Windows 用户提供旁白录音（WAV/MP3/M4A/FLAC），流程其余部分不变。
 
 ## 旁白来源：用户录音，或可选本机Qwen3
 

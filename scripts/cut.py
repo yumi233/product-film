@@ -30,14 +30,20 @@ import score
 from audio_policy import narration_source, source_audio_mode, validate_audio_inputs
 
 W, H, FPS, SR = 1920, 1080, 24, 44100
-SONG = '/System/Library/Fonts/Supplemental/Songti.ttc'
-BASK = '/System/Library/Fonts/Supplemental/Baskerville.ttc'
+WIN = os.name == 'nt'
+FONTS = os.path.join(os.environ.get('WINDIR', r'C:\Windows'), 'Fonts')
+def _first(*ps): return next((p for p in ps if os.path.exists(p)), ps[-1])
+# zh serif + en serif; macOS Songti/Baskerville, Windows SimSun/Times New Roman
+SONG = _first('/System/Library/Fonts/Supplemental/Songti.ttc', os.path.join(FONTS, 'simsun.ttc'), os.path.join(FONTS, 'msyh.ttc'))
+BASK = _first('/System/Library/Fonts/Supplemental/Baskerville.ttc', os.path.join(FONTS, 'times.ttf'), os.path.join(FONTS, 'georgia.ttf'))
+SONG_IDX = 1 if SONG.endswith('Songti.ttc') else 0
 
 
 def sh(*a): subprocess.run(a, check=True, capture_output=True)
 def dur(p): return float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', p],
                                         capture_output=True, text=True).stdout)
 def find_font(name):
+    if WIN: p = os.path.join(FONTS, name); return p if os.path.exists(p) else SONG
     r = subprocess.run(['find', '/System/Library/AssetsV2', '/System/Library/Fonts', '-name', name], capture_output=True, text=True)
     hits = r.stdout.split(); return hits[0] if hits else SONG
 def lowres(path, start, n):
@@ -137,7 +143,7 @@ def main(cfg_path):
             for k, ch in enumerate(tt['zh']):
                 d.text((x - d.textlength(ch, font=f) / 2, y + k * tt.get('size', 170) * 1.12), ch, font=f, fill=(32, 24, 18, 225))
         else:
-            fz, fe = ImageFont.truetype(SONG, tt.get('size', 120), index=1), ImageFont.truetype(BASK, 46)
+            fz, fe = ImageFont.truetype(SONG, tt.get('size', 120), index=SONG_IDX), ImageFont.truetype(BASK, 46)
             for txt, f, yy in ((tt['zh'], fz, tt.get('y', 380)), (tt.get('en', ''), fe, tt.get('y', 380) + tt.get('size', 120) + 50)):
                 if txt: d.text(((W - d.textlength(txt, font=f)) / 2, yy), txt, font=f, fill=tuple(tt.get('color', [255, 255, 255])) + (240,))
         t0, t1 = at(tt), starts[tt['seg']] + tt['until']
@@ -151,7 +157,7 @@ def main(cfg_path):
             sl = Image.new('RGBA', (W, H), (0, 0, 0, 0))
             sl.paste(Image.fromarray(a), (tt.get('x', W // 2) + 40, tt.get('y', 250) + len(tt['zh']) * int(tt.get('size', 170) * 1.12) + 40))
             layers.append((save(sl, 'seal'), t0 + 2.1, t1, 0.25))
-    fz, fe = ImageFont.truetype(SONG, 44, index=1), ImageFont.truetype(BASK, 28)
+    fz, fe = ImageFont.truetype(SONG, 44, index=SONG_IDX), ImageFont.truetype(BASK, 28)
     for k, (a, b, ln) in enumerate(spans):
         if not ln.get('zh'): continue
         im = Image.new('RGBA', (W, H), (0, 0, 0, 0))

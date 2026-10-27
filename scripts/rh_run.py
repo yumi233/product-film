@@ -25,7 +25,8 @@ PROMPT_NODE, SECS_NODE, MP_NODE, LOWRES_NODE = '94', '85', '63', '111'
 def key():
     k = os.environ.get('RUNNINGHUB_API_KEY')
     if not k:
-        sys.exit('RUNNINGHUB_API_KEY is not set (add it to ~/.zshrc and run via zsh -ic).')
+        sys.exit('RUNNINGHUB_API_KEY is not set (macOS: add it to ~/.zshrc and run via zsh -ic; '
+                 'Windows: setx RUNNINGHUB_API_KEY "<key>" in PowerShell, then reopen the terminal).')
     return k
 
 
