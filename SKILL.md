@@ -18,19 +18,25 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 ## 一、开场：引导用户（第一次对话必须做）
 
 ### 0. 先跟用户说清楚要走的路（第一次用时说一遍，几句话）
-> 我会按这几步来，每一步都先给你看、你点头再往下：0 检查环境、收集素材 → 1 方案 → 2 完整脚本 → 3 风格样张 → 4 关键帧 → 5 图文分镜给你审 → 6 洗高清 → 7 生成视频（新的一幕先测一条）→ 8 旁白 → 9 粗剪 → 10 逐幕审。花 RH 币之前一定先问你。
+> 环境我来配，你只需要交素材、审画面。我会按这几步来，每一步都先给你看、你点头再往下：0 检查环境、收集素材 → 1 方案 → 2 完整脚本 → 3 风格样张 → 4 关键帧 → 5 图文分镜给你审 → 6 洗高清 → 7 生成视频（新的一幕先测一条）→ 8 旁白 → 9 粗剪 → 10 逐幕审。花 RH 币之前一定先问你。
 
-### 1. 环境自检（两分钟，先做）
-先运行 `python3 scripts/doctor.py`，它逐项列出 OK / MISSING / WARN 和补救办法（不会打印 key）。缺什么就按 `references/setup.md` 引导用户补上，**不要跳过、不要假装有**。各项含义：
+### 1. 环境自检：AI 自己配，用户只做 AI 做不了的三件事
+**原则：用户只负责交素材和审画面。** 环境由 AI 自己检查、自己装，不把命令丢给用户去敲。
 
-| 检查 | 命令 | 缺了怎么办 |
+先运行 `python3 scripts/doctor.py`（不会打印 key），然后：
+
+| 检查 | 命令 | 谁来补 |
 |---|---|---|
-| Python 依赖 | `python3 -c "import numpy,scipy,PIL"` | 建 venv：`python3 -m venv .venv && .venv/bin/pip install -r requirements.txt` |
-| ffmpeg / ImageMagick | `which ffmpeg magick` | `brew install ffmpeg imagemagick` |
-| 浏览器控制 | `bsk browsers` | 引导安装 **browser-skill**（bsk CLI + Chrome 扩展），并打开扩展的「允许访问文件网址」 |
-| ChatGPT / Gemini 登录 | 用 bsk 打开 chatgpt.com、gemini.google.com 看是否已登录 | 请用户自己在 Chrome 登录，**绝不代输密码** |
-| RunningHub | `zsh -ic "python3 scripts/rh_run.py --check"` | 引导用户把会员 key 写进 `~/.zshrc` 的 `RUNNINGHUB_API_KEY`，**不要让用户把 key 贴进聊天** |
+| Python 依赖 | `python3 -c "import numpy,scipy,PIL"` | **AI 自己装**：`python3 -m venv .venv && .venv/bin/pip install -r requirements.txt` |
+| ffmpeg / ImageMagick | `which ffmpeg magick` | **AI 自己装**：`brew install ffmpeg imagemagick`（没有 Homebrew 时才请用户装） |
+| bsk 命令行 | `bsk browsers` | AI 能装就自己装；扩展本身要用户在 Chrome 里添加 |
+| 扩展「允许访问文件网址」 | 上传参考图报 Not allowed | **用户做**（AI 改不了 Chrome 设置） |
+| ChatGPT / Gemini 登录 | 用 bsk 打开看是否已登录 | **用户做**，绝不代输密码 |
+| RunningHub key | `zsh -ic "python3 scripts/rh_run.py --check"` | **用户做**：官网个人中心 → API 控制台复制 key，在终端运行 `echo 'export RUNNINGHUB_API_KEY="<粘贴>"' >> ~/.zshrc`；**不要让用户把 key 贴进聊天**。用户说配好后 AI 自己 `--check` |
 | 旁白来源 | 先确认用户有成品录音，或已有且愿意使用的本机TTS | 没有Qwen3时向用户索要最终旁白音频和对应文稿；不把安装模型当作必需步骤 |
+
+- 能自己装的直接装好，装完告诉用户装了什么；**不要跳过、不要假装有**。
+- 需要用户做的三件事，一次列清楚，每件写到「点哪里、看到什么算成功」（详细步骤见 `references/setup.md`），用户做完 AI 自己验证。
 
 配套技能（没有也能做，有会更好）。缺了就告诉用户它是做什么的、装了能省什么事，请用户自己装；不装就用退路，不要卡住：
 - **browser-skill**：网页出图必需。退路：Codex 生图（`scripts/keyframe.py`）。
