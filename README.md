@@ -8,9 +8,9 @@
 
 ## 教程视频（2 分 39 秒）
 
-[![product-film 使用教程](docs/tutorial-cover.jpg)](docs/tutorial.mp4)
+https://github.com/user-attachments/assets/0f44856e-804b-425f-b09a-72628893123d
 
-点击封面打开视频：分工说明、AI 做不了的三件事（插件文件访问、网页登录、RunningHub 密钥）、交素材与审画面。旁白为本机 Qwen3-TTS 合成，界面为示意重绘，RunningHub 页面以官网实际为准。
+（播放不了时打开 [docs/tutorial.mp4](docs/tutorial.mp4)。）视频内容：分工说明、AI 做不了的三件事（插件文件访问、网页登录、RunningHub 密钥）、交素材与审画面。旁白为本机 Qwen3-TTS 合成，界面为示意重绘，RunningHub 页面以官网实际为准。
 视频中的家具、关键帧与画卷外扩画面由作者 **yumi233** 原创设计 / 制作，版权归作者所有。
 
 ## 第一次怎么开始
