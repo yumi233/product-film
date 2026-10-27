@@ -6,7 +6,7 @@ Config (paths relative to the JSON file; times "at" are seconds inside a segment
 {
   "output": "videos/act1_rough.mp4",
   "intro":   {"image": "frames/P0.jpg", "seconds": 4.5, "xfade": 0.5},           # optional still opener
-  "clips":   [{"path": "videos/raw/1-1.mp4", "speed": 1.8}, ...],
+  "clips":   [{"path": "videos/raw/1-1.mp4", "speed": 1.8, "trim": 0, "end": 8.5}, ...],  # trim/end: keep source seconds trim..end (cut flawed parts)
   "align":   true,      # start each clip at the frame that best matches the previous clip's last frame
   "xfade":   0.25,      # crossfade between chained clips (0.25 hides tiny position jumps; 0.04 ~= hard cut)
   "fade":    [1.0, 1.5],
@@ -68,12 +68,13 @@ def main(cfg_path):
             last = lowres(prev, dur(prev) - 0.1, 1)[0]; cand = lowres(src, 0, 48)
             st = int(np.argmin(((cand - last) ** 2).mean((1, 2)))) / 24
         i = len(segs)
-        sh('ffmpeg', '-y', '-v', 'error', '-ss', f'{st}', '-i', src, '-vf',
+        lim = ['-t', f"{c['end'] - st}"] if c.get('end') else []  # end: keep source up to this second (cut flawed tail)
+        sh('ffmpeg', '-y', '-v', 'error', '-ss', f'{st}', *lim, '-i', src, '-vf',
            f'setpts=PTS/{sp},fps={FPS},scale={W}:-2:flags=lanczos,crop={W}:{H},format=yuv420p', '-an', '-c:v', 'libx264', '-crf', '16', f'{T}/v{i}.mp4')
         has_a = 'audio' in subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', src], capture_output=True, text=True).stdout
         keep_a = has_a and source_audio_mode(C, c) == 'verified_ambience'
         if keep_a:
-            sh('ffmpeg', '-y', '-v', 'error', '-ss', f'{st}', '-i', src, '-af', f'atempo={sp},aresample={SR}', '-ac', '1', f'{T}/a{i}.wav')
+            sh('ffmpeg', '-y', '-v', 'error', '-ss', f'{st}', *lim, '-i', src, '-af', f'atempo={sp},aresample={SR}', '-ac', '1', f'{T}/a{i}.wav')
         segs.append({'v': f'{T}/v{i}.mp4', 'a': f'{T}/a{i}.wav' if keep_a else None, 'd': dur(f'{T}/v{i}.mp4'), 'trim': st})
         xfs.append(c.get('xfade', C.get('xfade', 0.25))); prev = src
     starts, t = [], 0.0
