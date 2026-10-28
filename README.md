@@ -136,13 +136,19 @@ ln -s ~/.claude/skills/product-film ~/.codex/skills/product-film
 | `gemini_wash.py` | 在 Gemini 网页把关键帧洗成高清，内容不变 |
 | `keyframe.py` | 备选：用 Codex CLI 生成关键帧 |
 | `scroll.py` | 画卷外扩与拼接 |
-| `rh_run.py` | 调 RunningHub MiniMax H3 生成视频；任务号落盘，会话断了用 `--fetch` 取回；`--plus` 用大显存机器（贵） |
+| `rh_run.py` | 调 RunningHub MiniMax H3 生成视频；默认建议 6 秒 3.0 MP，OOM 自动降档（`--mp-fallback`）；参考图最多 5 张；`--key-env` 开第二个账号并行；任务号落盘，会话断了用 `--fetch` 取回；`--plus` 用大显存机器（贵） |
 | `contact.py` | 视频抽帧拼成总览，用来检查 |
+| `compare.py` | 关键帧和每件产品渲染图并排拼图，逐件对照结构 |
+| `qc.py` | 实测自检：逐帧抖动（`jitter`）、响度/低频/嘶声（`audio`）、参考图数量（`refs`） |
+| `stable_window.py` | 1.0 倍速下给每条素材挑最稳的 3–5 秒 |
+| `still_push.py` | 静图亚像素慢推（替代会一卡一卡的 zoompan） |
+| `music_phrases.py` | 找配乐的乐句起点，章节对齐用 |
+| `mix.py` | 成片混音：配乐、真实环境声床、动作音效，旁白处包络让位，线性调到 -18 LUFS |
 | `vo.py` | 本机 Qwen3-TTS 配旁白（`VO_REF` 声音克隆），ASR 回听核对 |
 | `voicestat.py` | 测每句旁白的音高，检查音色是否一致 |
 | `audio_policy.py` | 视频只留环境声；核听后才保留原音轨；支持导入你的旁白录音 |
-| `score.py` | 按剪辑点合成配乐（由 cut.py 调用） |
-| `cut.py` | 读一份 JSON 配置，出粗剪 |
+| `score.py` | 程序合成的占位配乐（由 cut.py 调用；正式片用可商用真乐器曲） |
+| `cut.py` | 读一份 JSON 配置，出画面 + 旁白 + 字幕；非 24 帧素材自动帧混合，`smooth` 抹平模型抖动，加速时警告 |
 | `handoff.py` | 交接：状态快照写进交接文件；执行者锁 `who` / `claim` / `release` |
 
 ## 参考文档（`references/`）
@@ -157,7 +163,7 @@ ln -s ~/.claude/skills/product-film ~/.codex/skills/product-film
 | [`audio.md`](references/audio.md) | 旁白怎么写、声音克隆、用户录音导入、配乐、字幕、片名 |
 | [`runninghub.md`](references/runninghub.md) | H3 工作流节点、费用实测、失败与取回、Plus 机器 |
 | [`handoff.md`](references/handoff.md) | 在 Claude 桌面端、Claude CLI、Codex 之间交接 |
-| [`pitfalls.md`](references/pitfalls.md) | 踩过的坑 |
+| [`pitfalls.md`](references/pitfalls.md) | 踩过的坑（含第三轮：噪声、抖动、跳切、配乐的实测原因） |
 
 ## 换工具接着做（多 agent 交接）
 

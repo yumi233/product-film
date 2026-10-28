@@ -9,7 +9,9 @@ Balance:
 Recover a run that was killed after the task was created (ids are logged in <out-dir>/rh_tasks.log):
     python3 rh_run.py --fetch TASK_ID --name 1-2 --out-dir videos/raw
 
-Key: env RUNNINGHUB_API_KEY (never print it). Concurrency is 1 task per account, so clips run one after another.
+Key: env RUNNINGHUB_API_KEY (never print it). Concurrency is 1 task per account, so clips run one after another;
+a second account (--key-env RUNNINGHUB_API_KEY_2) runs its own queue in parallel.
+Sharper short clips: --secs 6 --mp 3.0 --mp-fallback 2.5,2.07 (about 2368x1344, ~110-130 coins). At most 5 refs.
 Output: <out-dir>/<name>.mp4, and one line per clip "SAVED <path> coins <n>".
 """
 import argparse, json, os, subprocess, sys, time
@@ -20,12 +22,16 @@ HOST = 'https://www.runninghub.cn'
 WORKFLOW = '2113173574050729986'
 REF_NODES = ('88', '84', '86', '87')          # LoadImage x4 (ref image 1..4)
 PROMPT_NODE, SECS_NODE, MP_NODE, LOWRES_NODE = '94', '85', '63', '111'
+MAX_REFS = 5
+
+
+KEY_ENV = 'RUNNINGHUB_API_KEY'   # --key-env RUNNINGHUB_API_KEY_2 runs a second account in parallel
 
 
 def key():
-    k = os.environ.get('RUNNINGHUB_API_KEY')
+    k = os.environ.get(KEY_ENV)
     if not k:
-        sys.exit('RUNNINGHUB_API_KEY is not set (macOS: add it to ~/.zshrc and run via zsh -ic; '
+        sys.exit(f'{KEY_ENV} is not set (macOS: add it to ~/.zshrc and run via zsh -ic; '
                  'Windows: setx RUNNINGHUB_API_KEY "<key>" in PowerShell, then reopen the terminal).')
     return k
 
@@ -52,6 +58,8 @@ def run(name, prompt, refs, secs=8, mp=2.07, lowres=0.66, out_dir='.', workflow=
     out = os.path.join(out_dir, f'{name}.mp4')
     if os.path.exists(out):
         print('SKIP (exists)', out, flush=True); return out
+    if len(refs) > MAX_REFS:   # H3 runs out of GPU memory with more reference images
+        print(f'WARNING {name}: {len(refs)} refs, keeping the first {MAX_REFS}', flush=True); refs = refs[:MAX_REFS]
     prompt = generation_prompt(prompt)  # ambience/effects only; narration is mixed separately
     files = [upload(p) for p in refs]
     files = (files * 4)[:4]                    # every LoadImage needs a file; repeat refs to fill 4 slots
@@ -112,8 +120,19 @@ if __name__ == '__main__':
     ap.add_argument('--workflow', default=WORKFLOW)
     ap.add_argument('--plus', action='store_true', help='run on the 48G Plus GPU (fewer OOM failures, more coins)')
     ap.add_argument('--batch'); ap.add_argument('--check', action='store_true')
+    ap.add_argument('--key-env', default='RUNNINGHUB_API_KEY', help='env var holding the key, e.g. RUNNINGHUB_API_KEY_2 for a 2nd account')
+    ap.add_argument('--mp-fallback', default='', help='comma list tried after an OutOfMemory failure, e.g. 2.5,2.07 (failures are free)')
     ap.add_argument('--fetch', metavar='TASK_ID', help='download a finished task by id (see <out-dir>/rh_tasks.log)')
     a = ap.parse_args()
+    KEY_ENV = a.key_env
+    tries = [a.mp] + [float(x) for x in a.mp_fallback.split(',') if x]
+
+    def run_try(name, prompt, refs, secs):
+        for mp in tries:
+            out = run(name, prompt, refs, secs, mp, a.lowres, a.out_dir, a.workflow, a.plus)
+            if out:
+                return out
+        print('GAVE UP', name, flush=True)
     if a.check:
         check()
     elif a.fetch:
@@ -122,6 +141,6 @@ if __name__ == '__main__':
         base = os.path.dirname(os.path.abspath(a.batch))
         for s in json.load(open(a.batch)):
             refs = [r if os.path.isabs(r) else os.path.join(base, r) for r in s['refs']]
-            run(s['name'], s['prompt'], refs, s.get('secs', a.secs), a.mp, a.lowres, a.out_dir, a.workflow, a.plus)
+            run_try(s['name'], s['prompt'], refs, s.get('secs', a.secs))
     else:
-        run(a.name, a.prompt, a.refs, a.secs, a.mp, a.lowres, a.out_dir, a.workflow, a.plus)
+        run_try(a.name, a.prompt, a.refs, a.secs)

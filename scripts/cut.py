@@ -6,9 +6,11 @@ Config (paths relative to the JSON file; times "at" are seconds inside a segment
 {
   "output": "videos/act1_rough.mp4",
   "intro":   {"image": "frames/P0.jpg", "seconds": 4.5, "xfade": 0.5},           # optional still opener
-  "clips":   [{"path": "videos/raw/1-1.mp4", "speed": 1.8, "trim": 0, "end": 8.5}, ...],  # trim/end: keep source seconds trim..end (cut flawed parts)
+  "clips":   [{"path": "videos/raw/1-1.mp4", "speed": 1.0, "trim": 0, "end": 4.5, "smooth": false}, ...],
+             # trim/end: keep source seconds trim..end (pick them with stable_window.py); keep speed 1.0 (speed-ups judder);
+             # smooth: 3-frame blend for clips the model rendered with uneven frame pacing; xfade per clip overrides the default
   "align":   true,      # start each clip at the frame that best matches the previous clip's last frame
-  "xfade":   0.25,      # crossfade between chained clips (0.25 hides tiny position jumps; 0.04 ~= hard cut)
+  "xfade":   0.3,       # default soft cut; use ~0.9 between chapters and ~0.6 painting<->real (0.15 reads as a jump cut)
   "fade":    [1.0, 1.5],
   "title":   {"seg": 0, "at": 0.6, "until": 4.3, "zh": "节序", "en": "", "style": "vertical",  # or "center"
               "x": 1640, "y": 250, "size": 170, "seal": true},
@@ -75,14 +77,22 @@ def main(cfg_path):
             st = int(np.argmin(((cand - last) ** 2).mean((1, 2)))) / 24
         i = len(segs)
         lim = ['-t', f"{c['end'] - st}"] if c.get('end') else []  # end: keep source up to this second (cut flawed tail)
+        if sp != 1.0:
+            print(f'WARNING clip {k}: speed {sp} drops frames unevenly at {FPS} fps (judder); prefer speed 1.0 + a shorter steady window', flush=True)
+        r = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'csv=p=0', src],
+                           capture_output=True, text=True).stdout.split() or ['24/1']
+        n_, d_ = (r[0].split('/') + ['1'])[:2]
+        # other frame rates: blend frames instead of dropping them (dropping = stutter every few frames)
+        rate = f'fps={FPS}' if abs(float(n_) / float(d_) - FPS) < .1 or sp != 1.0 else f'framerate=fps={FPS}:interp_start=0:interp_end=255:scene=100'
+        smooth = ",tmix=frames=3:weights='1 2 1'" if c.get('smooth') else ''   # evens out model frame-pacing jitter
         sh('ffmpeg', '-y', '-v', 'error', '-ss', f'{st}', *lim, '-i', src, '-vf',
-           f'setpts=PTS/{sp},fps={FPS},scale={W}:-2:flags=lanczos,crop={W}:{H},format=yuv420p', '-an', '-c:v', 'libx264', '-crf', '16', f'{T}/v{i}.mp4')
+           f'setpts=PTS/{sp},{rate},scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{H}{smooth},format=yuv420p', '-an', '-c:v', 'libx264', '-crf', '16', f'{T}/v{i}.mp4')
         has_a = 'audio' in subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', src], capture_output=True, text=True).stdout
         keep_a = has_a and source_audio_mode(C, c) == 'verified_ambience'
         if keep_a:
             sh('ffmpeg', '-y', '-v', 'error', '-ss', f'{st}', *lim, '-i', src, '-af', f'atempo={sp},aresample={SR}', '-ac', '1', f'{T}/a{i}.wav')
         segs.append({'v': f'{T}/v{i}.mp4', 'a': f'{T}/a{i}.wav' if keep_a else None, 'd': dur(f'{T}/v{i}.mp4'), 'trim': st})
-        xfs.append(c.get('xfade', C.get('xfade', 0.25))); prev = src
+        xfs.append(c.get('xfade', C.get('xfade', 0.3))); prev = src
     starts, t = [], 0.0
     for i, s in enumerate(segs):
         starts.append(t); t += s['d'] - (xfs[i] if i < len(segs) - 1 else 0)

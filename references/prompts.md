@@ -140,7 +140,46 @@ ochre-brown walnut wash, pale silver-grey steel with thin white highlight lines)
 Correct perspective: one horizon and one set of vanishing points for everything; every leg on the floor with soft contact shadows; believable real
 scale (table top 0.75 m, seat 0.45 m, people ~1.7 m); furniture placed where people would really put it.
 ```
-再写清：每件在哪、朝哪（主位椅在桌后长边面向客人，客位椅在侧面或对面朝向主人）、机位高度。
+再写清：每件在哪、朝哪、机位高度。**有产品方的平面布置图时照它写**，例（茶席）：
+```
+PLACEMENT (follow strictly): the host chair sits at the FAR long side of the tea table, centred behind the inset tea tray, facing the table
+and pulled in under the table edge; it never stands next to or against the slab pedestal. Guest chairs at the two short ends facing inward,
+the twin seat on the near long side. Knees go under the tabletop without touching any leg.
+```
+产品带有容易被画丢的部件时，逐项写成清单（例：`The inset stainless tray MUST stay complete: sink at the left, slatted draining grid in the
+middle, induction kettle well with the electric kettle at the right.`），出图后按清单逐件对照。
+
+## 主题白棚（产品展示、线描人）
+背景元素从项目主题取，不用通用的丝带、纱帘（用户说「不符合主题」）。竹院主题例：
+```
+SET: pure white seamless studio, bright soft high-key daylight, crisp bamboo stalk and leaf shadows on the white backdrop and floor, two or three
+slender green bamboo stalks at the frame edges, a few bamboo leaves drifting. 16:9 landscape. The bamboo never covers the product structure.
+```
+同一部片子里的白棚统一一种，旧的灰棚白底镜头要么重做、要么只用在不相邻的位置。
+
+## 线描人（白棚里演示怎么用）
+```
+The people are NOT real: thin continuous WHITE line drawings (outline only, transparent bodies), sitting naturally on the real furniture with
+correct scale. CRUCIAL: every line figure sits INSIDE its chair: hips on the seat, back against the backrest, forearms on or just above the
+armrests, feet on the floor. The figures overlap the chairs exactly; never float beside or between chairs.
+```
+视频提示词里再加：`The people remain thin white line drawings for the whole shot; they never become real people and never leave their seats.`
+
+## 实景真人（固定卡司）
+全片用同一组人，服装写死，每条含人的提示词都带上：
+```
+CAST (same people across the film): a calm Chinese man in his 40s in an off-white linen stand-collar shirt (host); a woman in her 30s in a pale
+grey-green linen dress, hair in a low bun (guest); a younger man in a charcoal linen shirt. Natural documentary moment, nobody looks at the camera,
+no talking, correct scale.
+```
+在已经对照通过的场景图上用「局部修改」加人，不重画全图；加人后仍要逐件复查（常带出外来椅子、吃掉小部件）。要「只有一个人」时写 `Add ONLY ONE person ... exactly one chair; do NOT add any other chairs, guests or furniture.`
+
+## 稳定运镜（视频提示词结尾）
+```
+Camera on a stabilised dolly: perfectly smooth, constant slow speed, no shake, no jitter, no sudden moves; subject motion slow and continuous.
+All furniture stays perfectly rigid and unchanged: same structure, parts, proportions, materials and colours as the first frame; nothing added
+or removed, no morphing.
+```
 
 ## 爆炸图（暖灰棚拍，和出画画面同色）
 ```
