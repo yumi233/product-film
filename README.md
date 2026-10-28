@@ -11,7 +11,7 @@
 https://github.com/user-attachments/assets/0f44856e-804b-425f-b09a-72628893123d
 
 （播放不了时打开 [docs/tutorial.mp4](docs/tutorial.mp4)。）视频内容：分工说明、AI 做不了的三件事（插件文件访问、网页登录、RunningHub 密钥）、交素材与审画面。旁白为本机 Qwen3-TTS 合成，界面为示意重绘，RunningHub 页面以官网实际为准。
-视频中的家具、关键帧与画卷外扩画面由作者 **yumi233** 原创设计 / 制作，版权归作者所有。
+视频中的家具、关键帧与画卷外扩画面由作者 **yumi** 原创设计 / 制作，版权归作者所有。
 
 ## 第一次怎么开始
 
@@ -197,7 +197,11 @@ python3 ~/.claude/skills/product-film/scripts/handoff.py claim <项目目录> "C
 
 ## 示例效果
 
-示例项目「节序 Nodes in Order」茶家具系列视频的制作过程（[`examples/nodes-tea-furniture/`](examples/nodes-tea-furniture/)）。
+**真实案例（最新）**：[《节序》v16 成片的完整分镜、旁白、声音和自检数据](examples/jiexu-v16/README.md)（作者 yumi，4 分 22 秒，六件家具一器一段）。
+
+![v16 成片分镜](docs/showcase/jiexu-v16-storyboard.jpg)
+
+早期版本：示例项目「节序 Nodes in Order」茶家具系列视频的制作过程（[`examples/nodes-tea-furniture/`](examples/nodes-tea-furniture/)）。
 
 **第一幕用的长卷**：以仇英《竹院品古》为中段，向左右两侧外扩，拼成 9600×1350。
 ![scroll](docs/showcase/scroll.jpg)
@@ -209,7 +213,7 @@ python3 ~/.claude/skills/product-film/scripts/handoff.py claim <项目目录> "C
 ![keyframes](docs/showcase/keyframes.jpg)
 
 ## 版权说明
-- **家具设计**：示例中的茶台、主位椅、客位椅等家具及其渲染图，均为作者 **yumi233 原创设计**，版权归作者所有。未经许可，不得使用、复制或用于商业用途。`docs/showcase/` 中的图片与 `docs/tutorial.mp4` 教程视频中的画面均为作者原创并已标注。
+- **家具设计**：示例中的茶台、主位椅、客位椅等家具及其渲染图，均为作者 **yumi 原创设计**，版权归作者所有。未经许可，不得使用、复制或用于商业用途。`docs/showcase/` 中的图片与 `docs/tutorial.mp4` 教程视频中的画面均为作者原创并已标注。
 - **古画**：仇英《竹院品古》属于公有领域。长卷的外扩部分和画中动态由 AI 生成，仅作示例。
 - **人物**：示例中的人物均为 AI 生成，不对应真实的人。
 - **代码与文档**（`scripts/`、`references/`、`SKILL.md`）可以自由使用。
