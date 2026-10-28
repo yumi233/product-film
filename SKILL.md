@@ -1,6 +1,6 @@
 ---
 name: product-film
-description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创意、分镜、关键帧、视频生成、旁白、配乐，一直做到粗剪。关键帧在用户已登录的 ChatGPT 网页一张张生成，再用 Gemini 网页洗成高清（也可退回 Codex 生图）；视频用 RunningHub 上的 MiniMax H3 工作流，只扣 RH 币；旁白由用户提供成品录音，或用用户已有的本机 Qwen3-TTS 单独制作，统一后期合成；视频模型只生成无说话声的环境音效；配乐按剪辑点程序合成；ffmpeg 按 JSON 出粗剪。内置三种结构：分幕写实、一镜到底、画卷（走进古画，家具逐件出画，最后出画入真）。带新用户引导和环境自检，缺什么工具或技能会引导安装。坚持一幕一审：每一步先给用户看，确认后再花钱。Claude Code 和 Codex 都能用。用户说要给家具或产品做宣传片、介绍视频、作品集视频、AI 视频，写视频脚本或分镜，生成关键帧或产品视频镜头，做爆炸图组装动画，配旁白或配乐，剪粗剪时，都应使用本技能。
+description: 用 AI 给家具或产品做 1–5 分钟的介绍短片，从创意、分镜、关键帧、视频生成、旁白、配乐，一直做到混音成片和量化自检。关键帧在用户已登录的 ChatGPT 网页一张张生成，再用 Gemini 网页洗成高清（也可退回 Codex 生图）；视频用 RunningHub 上的 MiniMax H3 工作流，只扣 RH 币；旁白由用户提供成品录音，或用 RunningHub 云端声音设计 + IndexTTS 逐句克隆，或用户已有的本机 Qwen3-TTS，统一后期合成；配乐用可商用真乐器曲（用户挑），环境声用真实录音，模型原声默认不用；ffmpeg 按 JSON 剪辑（1.0 倍速稳定段、章节对齐乐句），再混音到 -18 LUFS，交片前测抖动和噪声。内置三种结构：分幕写实、一镜到底、画卷（走进古画，家具逐件出画，最后出画入真）。带新用户引导和环境自检，缺什么工具或技能会引导安装。坚持一幕一审：每一步先给用户看，确认后再花钱。Claude Code 和 Codex 都能用。用户说要给家具或产品做宣传片、介绍视频、作品集视频、AI 视频，写视频脚本或分镜，生成关键帧或产品视频镜头，做爆炸图组装动画，配旁白或配乐，剪辑、混音或检查成片的抖动和噪声时，都应使用本技能。
 ---
 
 # AI 家具 / 产品短片
@@ -9,7 +9,7 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 
 在 Claude Code 和 Codex 里用法一样，见 `references/setup.md`。
 
-运行环境：macOS or Windows 10/11 (scripts detect the OS; Windows uses winget, SimSun/Times New Roman fonts and setx for the key; local Qwen3-TTS via mlx-audio is Apple-silicon only, so Windows narration comes from user recordings). Python 3.9+ with numpy, scipy, Pillow (requirements.txt); ffmpeg; ImageMagick 7; Chrome + browser-skill (`bsk` CLI and extension) for ChatGPT/Gemini web; RunningHub member API key in env RUNNINGHUB_API_KEY; Narration: user-supplied WAV/MP3/M4A/FLAC, or optional local Qwen3-TTS + ASR via mlx-audio. Optional: Codex CLI (fallback image generation).
+运行环境：macOS or Windows 10/11 (scripts detect the OS; Windows uses winget, SimSun/Times New Roman fonts and setx for the key; local Qwen3-TTS via mlx-audio is Apple-silicon only, so Windows narration comes from user recordings). Python 3.9+ with numpy, scipy, Pillow (requirements.txt); ffmpeg; ImageMagick 7; Chrome + browser-skill (`bsk` CLI and extension) for ChatGPT/Gemini web; RunningHub member API key in env RUNNINGHUB_API_KEY (optional second account in RUNNINGHUB_API_KEY_2); Narration: user-supplied WAV/MP3/M4A/FLAC, RunningHub cloud TTS apps, or optional local Qwen3-TTS + ASR via mlx-audio. Music and ambience: licensed stock audio (e.g. Pixabay) chosen by the user. Optional: Codex CLI (fallback image generation).
 
 **声音分工**：视频模型优先生成风、水、雨、脚步、杯盏等环境音效，禁止生成旁白、对白和唱歌。旁白与配乐单独在后期合成；环境声核听确认无意外人声后保留。未核听或含人声的原音轨先静音，不承诺能从混合音轨无损去掉说话声。
 
@@ -18,7 +18,7 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 ## 一、开场：引导用户（第一次对话必须做）
 
 ### 0. 先跟用户说清楚要走的路（第一次用时说一遍，几句话）
-> 环境我来配，你只需要交素材、审画面。我会按这几步来，每一步都先给你看、你点头再往下：0 检查环境、收集素材 → 1 方案 → 2 完整脚本 → 3 风格样张 → 4 关键帧 → 5 图文分镜给你审 → 6 洗高清 → 7 生成视频（新的一幕先测一条）→ 8 旁白 → 9 粗剪 → 10 逐幕审。花 RH 币之前一定先问你。
+> 环境我来配，你只需要交素材、审画面。我会按这几步来，每一步都先给你看、你点头再往下：0 检查环境、收集素材 → 1 方案 → 2 完整脚本 → 3 风格样张 → 4 关键帧 → 5 图文分镜给你审 → 6 洗高清 → 7 生成视频（新的一幕先测一条）→ 8 旁白 → 9 选曲、剪辑、混音、自检 → 10 逐幕审。花 RH 币之前一定先问你。
 
 ### 1. 环境自检：AI 自己配，用户只做 AI 做不了的三件事
 **原则：用户只负责交素材和审画面。** 环境由 AI 自己检查、自己装，不把命令丢给用户去敲。
@@ -33,7 +33,7 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 | 扩展「允许访问文件网址」 | 上传参考图报 Not allowed | **用户做**（AI 改不了 Chrome 设置） |
 | ChatGPT / Gemini 登录 | 用 bsk 打开看是否已登录 | **用户做**，绝不代输密码 |
 | RunningHub key | macOS `zsh -ic "python3 scripts/rh_run.py --check"`；Windows `python scripts/rh_run.py --check` | **用户做**：runninghub.cn 顶部 API → 获取密钥 → 左侧「消费级-会员」复制 key（详见 setup.md）；Windows 在 PowerShell 运行 `setx RUNNINGHUB_API_KEY "<粘贴>"` 后重开终端；macOS 在终端运行 `echo 'export RUNNINGHUB_API_KEY="<粘贴>"' >> ~/.zshrc`；**不要让用户把 key 贴进聊天**。用户说配好后 AI 自己 `--check` |
-| 旁白来源 | 先确认用户有成品录音，或已有且愿意使用的本机TTS | 没有Qwen3时向用户索要最终旁白音频和对应文稿；不把安装模型当作必需步骤 |
+| 旁白来源 | 先确认用户有成品录音、愿意用 RH 云端配音，或已有本机TTS | 都没有时向用户索要最终旁白音频和对应文稿；不把安装模型当作必需步骤 |
 
 - 能自己装的直接装好，装完告诉用户装了什么；**不要跳过、不要假装有**。
 - 需要用户做的三件事，一次列清楚，每件写到「点哪里、看到什么算成功」（详细步骤见 `references/setup.md`），用户做完 AI 自己验证。
@@ -45,16 +45,18 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 - 遇到本技能没覆盖的需求（比如要出 PPT、要配字幕文件、要真实乐器配乐），先在当前环境里搜有没有现成技能（Claude Code 里可以用技能搜索 / 推荐功能；Codex 看 `~/.codex/skills`），有就推荐给用户装，没有再自己做。
 
 ### 2. 问用户要素材（一次问清）
-- 每件产品：**渲染图**（白底）、**爆炸图**、**细节图**；名称和一句话卖点。
+- 每件产品：**渲染图**（白底）、**细节图**（有爆炸图也收，但用不用先问）；名称和一句话卖点。
+- **最新定稿的设计报告 / PPT**（以它为准，早期白底图可能是废弃方案）、**平面布置图**（决定摆位）。
 - **用户自己的场景图**（产品放在真实空间里的效果图）：真实空间的镜头优先用它，摆放和透视最可靠。
 - 设计报告 / 作品集 PPT（可以从里面抽图：`unzip -o x.pptx 'ppt/media/*'`）。
 - 风格参考、人物（露不露脸）、片长、预算（RH 币余额）。
-- **旁白来源**：先确认用户提供成品录音、使用已有本机TTS，还是明确不要旁白。用户没有Qwen3时，请其提供WAV、MP3、M4A或FLAC及对应文稿；整段录音或按编号分句均可。不要只索要一段音色样本，误当作可直接合成的最终旁白。
+- **旁白来源**：先确认用户提供成品录音、使用 RH 云端配音（声音设计 + IndexTTS，见 audio.md）、使用已有本机TTS，还是明确不要旁白。
+- **配乐**：用户有版权曲就用；没有时说明会从可商用曲库找 3–5 首给他挑。用户没有Qwen3时，请其提供WAV、MP3、M4A或FLAC及对应文稿；整段录音或按编号分句均可。不要只索要一段音色样本，误当作可直接合成的最终旁白。
 
 ### 3. 写「理解与计划」给用户确认（先不动手）
 - 推荐哪种结构（`references/structures.md`），分几部分、每部分讲什么、总时长；
 - **既要单件，也要整体**：每件产品单独被看清，最后所有产品同在一个空间、有人在用；
-- 预算：H3 默认机器每条 10 秒，约 130–165 币（失败不扣费），按条数列总数和余额，再加约三成重抽；
+- 预算：H3 默认每条 6 秒 3.0 MP，约 110–130 币（失败不扣费），按条数列总数和余额，再加约三成重抽；有第二个账号可并行；
 - 2–4 个要用户定的问题（风格、人物、结尾、预算）。
 - 大方向（结构、风格、是否重做）**一定先确认**；小改动（换一句旁白、重抽一条）可以直接做，做完告诉用户。
 
@@ -64,7 +66,7 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 
 ```
 0 自检+素材 → 1 方案 → 2 完整视频脚本 → 3 风格样张 → 4 关键帧 → 5 分镜总览审核
-→ 6 洗高清 → 7 单幕生成视频（先测一条）→ 8 旁白 → 9 粗剪 → 10 逐幕审，迭代
+→ 6 洗高清 → 7 单幕生成视频（先测一条）→ 8 旁白 → 9 选曲、剪辑、混音、自检 → 10 逐幕审，迭代
 ```
 
 ### 1–2. 方案和完整视频脚本
@@ -122,7 +124,7 @@ description: 用 AI 给家具或产品做 1–3 分钟的介绍短片，从创�
 - 用户录音通过`vo.lines[].path`导入WAV/MP3/M4A/FLAC；原有`vo.dir`加`id.wav`仍可用。默认保持1.0倍语速，0.92仅在本项目或用户明确选定时设置。
 - 按实测音频时长校准字幕与剪辑，不截断词尾；有ASR时可回听比对，没有时逐句核听。缺旁白可先出明确标注的画面粗剪，带旁白成片须拿到最终录音。
 
-### 9. 粗剪
+### 9. 选曲、剪辑、混音、自检
 - **先定配乐**（可商用真乐器曲给用户挑，见 audio.md），`scripts/music_phrases.py` 找乐句起点。
 - `scripts/stable_window.py` 给每条素材挑最稳的 3–5 秒；静图特写用 `scripts/still_push.py` 做亚像素慢推。
 - 写剪辑配置 JSON（字段见 `scripts/cut.py` 开头），全部 1.0 倍速；章节叠化 0.9 秒、画卷↔实物 0.6 秒、其余 0.3 秒；镜头最短 3 秒；章节首镜对齐乐句。抖动的变形镜头设 `smooth: true`。cut.py 只出画面 + 旁白 + 字幕（`music: []`、`source_audio: "mute"`）。
